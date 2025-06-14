@@ -34,3 +34,18 @@
 | **메시지 바디(선택)** | `xxxxxxxxx` |
 |           | 데이터 |
 
+## HTTP 응답 구조
+
+| 구성 요소 | 내용 |
+|----------|------|
+| **응답 행** | `HTTP/1.1`, `200`, `OK` |
+|           | 버전, 상태코드, 상태 텍스트 |
+| **헤더 1** | `Content-type`: `text/html` |
+|           | key: value |
+| **헤더 2** | `Content-length`: `30` |
+|           | key: value |
+| **헤더 3** | `Accept`: `*/*` |
+|           | key: value |
+| **빈 줄** | | |
+| **메시지 바디(선택)** | `Hello, this is a message body.` |
+|           | 데이터 |
