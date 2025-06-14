@@ -17,167 +17,162 @@ use std::io::{Result, Write};
 */
 #[derive(Debug, PartialEq, Clone)]
 pub struct HttpResponse<'a> {
-  pub version: &'a str,
-  pub status_code: &'a str,
-  pub status_text: &'a str,
-  pub headers: Option<HashMap<&'a str, &'a str>>,
-  pub body: Option<String>,
+    pub version: &'a str,
+    pub status_code: &'a str,
+    pub status_text: &'a str,
+    pub headers: Option<HashMap<&'a str, &'a str>>,
+    pub body: Option<String>,
 }
 
 impl<'a> Default for HttpResponse<'a> {
-  fn default() -> Self {
-    Self {
-      version: "HTTP/1.1".into(),
-      status_code: "200".into(),
-      status_text: "OK".into(),
-      headers: None,
-      body: None,
+    fn default() -> Self {
+        Self {
+            version: "HTTP/1.1".into(),
+            status_code: "200".into(),
+            status_text: "OK".into(),
+            headers: None,
+            body: None,
+        }
     }
-  }
 }
 
 impl<'a> HttpResponse<'a> {
-  pub fn new(status_code: &'a str, headers: Option<HashMap<&'a str, &'a str>>, body: Option<String>) -> Self {
-    let mut response: HttpResponse<'a> = HttpResponse::default();
-    if status_code != "200" {
-      response.status_code = status_code.into();
+    pub fn new(
+        status_code: &'a str,
+        headers: Option<HashMap<&'a str, &'a str>>,
+        body: Option<String>,
+    ) -> Self {
+        let mut response: HttpResponse<'a> = HttpResponse::default();
+        if status_code != "200" {
+            response.status_code = status_code.into();
+        }
+
+        response.headers = match &headers {
+            Some(h) => Some(h.clone()),
+            None => {
+                let mut h = HashMap::new();
+                h.insert("Content-Type", "text/html");
+                Some(h)
+            }
+        };
+
+        response.status_text = match response.status_code {
+            "200" => "OK".into(),
+            "400" => "Bad Request".into(),
+            "404" => "Not Found".into(),
+            "500" => "Internal Server Error".into(),
+            _ => "Not Found".into(),
+        };
+
+        response.body = body;
+
+        response
     }
-    
-    response.headers = match &headers {
-      Some(h) => Some(h.clone()),
-      None => {
-        let mut h = HashMap::new();
-        h.insert("Content-Type", "text/html");
-        Some(h)
-      },
-    };
 
-    response.status_text = match response.status_code {
-      "200" => "OK".into(),
-      "400" => "Bad Request".into(),
-      "404" => "Not Found".into(),
-      "500" => "Internal Server Error".into(),
-      _ => "Not Found".into(),
-    };
-
-    response.body = body;
-
-    response
-  }
-
-  pub fn send_response(&self, write_stream: &mut impl Write) -> Result<()> {
-    let res = self.clone();
-    let response_string: String = String::from(res);
-    let _ = write!(write_stream, "{}", response_string);
-    Ok(())
-  }
-
-  fn version(&self) -> &str {
-    self.version
-  }
-
-  fn status_code(&self) -> &str {
-    self.status_code
-  }
-
-  fn status_text(&self) -> &str {
-    self.status_text
-  }
-
-  fn headers(&self) -> String {
-    let map = self.headers.clone().unwrap();
-    let mut header_string: String = "".into();
-    for (k, v) in map.iter() {
-      header_string = format!("{}{}: {}\r\n", header_string, k, v);
+    pub fn send_response(&self, write_stream: &mut impl Write) -> Result<()> {
+        let res = self.clone();
+        let response_string: String = String::from(res);
+        let _ = write!(write_stream, "{}", response_string);
+        Ok(())
     }
-    header_string
-  }
 
-  fn body(&self) -> &str {
-    match &self.body {
-      Some(b) => b.as_str(),
-      None => "",
+    fn version(&self) -> &str {
+        self.version
     }
-  }
-  
+
+    fn status_code(&self) -> &str {
+        self.status_code
+    }
+
+    fn status_text(&self) -> &str {
+        self.status_text
+    }
+
+    fn headers(&self) -> String {
+        let map = self.headers.clone().unwrap();
+        let mut header_string: String = "".into();
+        for (k, v) in map.iter() {
+            header_string = format!("{}{}: {}\r\n", header_string, k, v);
+        }
+        header_string
+    }
+
+    fn body(&self) -> &str {
+        match &self.body {
+            Some(b) => b.as_str(),
+            None => "",
+        }
+    }
 }
 
 impl<'a> From<HttpResponse<'a>> for String {
-  fn from(res: HttpResponse) -> String {
-    let res1 = res.clone();
-    format!(
-      "{} {} {}\r\n{}Content-Length: {}\r\n\r\n{}",
-      &res1.version(),
-      &res1.status_code(),
-      &res1.status_text(),
-      &res1.headers(),
-      &res.body.unwrap_or_default().len(),
-      &res1.body()
-    )
-  }
+    fn from(res: HttpResponse) -> String {
+        let res1 = res.clone();
+        format!(
+            "{} {} {}\r\n{}Content-Length: {}\r\n\r\n{}",
+            &res1.version(),
+            &res1.status_code(),
+            &res1.status_text(),
+            &res1.headers(),
+            &res.body.unwrap_or_default().len(),
+            &res1.body()
+        )
+    }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  
-  #[test]
-  fn test_response_struct_creation_200() {
-    // Given
-    let status_code = "200";
-    let headers = None;
-    let body = Some("Item was shipped on 21st Dec 2020".into());
-    
-    let response_expected = HttpResponse {
-      version: "HTTP/1.1",
-      status_code: "200",
-      status_text: "OK",
-      headers: {
-        let mut h = HashMap::new();
-        h.insert("Content-Type", "text/html");
-        Some(h)
-      },
-      body: Some("Item was shipped on 21st Dec 2020".into()),
-    };
+    use super::*;
 
-    // When
-    let response_actual = HttpResponse::new(
-      status_code,
-      headers,
-      body,
-    );
+    #[test]
+    fn test_response_struct_creation_200() {
+        // Given
+        let status_code = "200";
+        let headers = None;
+        let body = Some("Item was shipped on 21st Dec 2020".into());
 
-    // Then
-    assert_eq!(response_actual, response_expected);
-  }
+        let response_expected = HttpResponse {
+            version: "HTTP/1.1",
+            status_code: "200",
+            status_text: "OK",
+            headers: {
+                let mut h = HashMap::new();
+                h.insert("Content-Type", "text/html");
+                Some(h)
+            },
+            body: Some("Item was shipped on 21st Dec 2020".into()),
+        };
 
-  #[test]
-  fn test_response_struct_creation_404() {
-    // Given
-    let status_code = "404";
-    let headers = None;
-    let body = Some("Item was shipped on 21st Dec 2020".into());
-    
-    let response_expected = HttpResponse {
-      version: "HTTP/1.1",
-      status_code: "404",
-      status_text: "Not Found",
-      headers: {
-        let mut h = HashMap::new();
-        h.insert("Content-Type", "text/html");
-        Some(h)
-      },
-      body: Some("Item was shipped on 21st Dec 2020".into()),
-    };
+        // When
+        let response_actual = HttpResponse::new(status_code, headers, body);
 
-    // When
-    let response_actual = HttpResponse::new(
-      status_code,
-      headers,
-      body,
-    );
+        // Then
+        assert_eq!(response_actual, response_expected);
+    }
 
-    // Then
-    assert_eq!(response_actual, response_expected);
-  }
+    #[test]
+    fn test_response_struct_creation_404() {
+        // Given
+        let status_code = "404";
+        let headers = None;
+        let body = Some("Item was shipped on 21st Dec 2020".into());
+
+        let response_expected = HttpResponse {
+            version: "HTTP/1.1",
+            status_code: "404",
+            status_text: "Not Found",
+            headers: {
+                let mut h = HashMap::new();
+                h.insert("Content-Type", "text/html");
+                Some(h)
+            },
+            body: Some("Item was shipped on 21st Dec 2020".into()),
+        };
+
+        // When
+        let response_actual = HttpResponse::new(status_code, headers, body);
+
+        // Then
+        assert_eq!(response_actual, response_expected);
+    }
 }
