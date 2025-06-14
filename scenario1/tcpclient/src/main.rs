@@ -12,10 +12,10 @@ use std::str;
 fn main() {
     let mut stream = TcpStream::connect("localhost:3000").unwrap();
 
-    stream.write("Hello".as_bytes()).unwrap(); // 'Hello' 메시지를 TCP 서버 커넥션에 쓴다.
+    stream.write_all("Hello".as_bytes()).unwrap(); // 'Hello' 메시지를 TCP 서버 커넥션에 쓴다.
 
     let mut buffer = [0; 5];
-    stream.read(&mut buffer).unwrap(); // 서버로부터 수신된 바이트를 읽는다.
+    stream.read_exact(&mut buffer).unwrap(); // 서버로부터 수신된 바이트를 읽는다.
 
     println!(
         "Got response from server:{:?}",

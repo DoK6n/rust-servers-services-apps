@@ -10,7 +10,7 @@ fn main() {
         println!("New connection established!");
 
         let mut buffer = [0; 1024];
-        stream.read(&mut buffer).unwrap(); // 유입되는 스트림을 읽는다.
-        stream.write(&mut buffer).unwrap(); // 받은 데이터를 같은 커넥션을 통해 클라이언트에게 다시 전송한다.
+        stream.read_exact(&mut buffer).unwrap(); // 유입되는 스트림을 읽는다.
+        stream.write_all(&buffer).unwrap(); // 받은 데이터를 같은 커넥션을 통해 클라이언트에게 다시 전송한다.
     }
 }
