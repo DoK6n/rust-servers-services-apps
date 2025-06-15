@@ -2,7 +2,7 @@
   "better-comments.tags": [
     {
       "tag": "Given",
-      "color": "#4CAF50",  // 초록색 - 준비/시작을 의미
+      "color": "#4CAF50", // 초록색 - 준비/시작을 의미
       "strikethrough": false,
       "underline": false,
       "bold": true,
@@ -10,7 +10,7 @@
     },
     {
       "tag": "When",
-      "color": "#FF9800",  // 주황색 - 실행/동작을 의미
+      "color": "#FF9800", // 주황색 - 실행/동작을 의미
       "strikethrough": false,
       "underline": false,
       "bold": true,
@@ -18,11 +18,13 @@
     },
     {
       "tag": "Then",
-      "color": "#2196F3",  // 파란색 - 검증/결과를 의미
+      "color": "#2196F3", // 파란색 - 검증/결과를 의미
       "strikethrough": false,
       "underline": false,
       "bold": true,
       "italic": false
     }
-  ]
+  ],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true
 }
